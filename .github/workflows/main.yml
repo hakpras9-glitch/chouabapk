@@ -19,16 +19,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.9'
+
     - name: Build APK
       run: |
-        chmod +x gradlew || true
-        ./gradlew assembleDebug || gradle assembleDebug
+        gradle assembleDebug --stacktrace
 
     - name: Find APK
       run: |
         mkdir -p apk-output
         find . -type f -name "*.apk" -not -path "./.git/*" -exec cp {} apk-output/ \;
-        echo "APK files:"
         ls -lh apk-output
 
     - name: Upload APK
