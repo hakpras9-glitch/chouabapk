@@ -17,17 +17,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Build with Gradle Fallback
+    - name: Build with Gradle
       run: |
         chmod +x gradlew || true
-        ./gradlew assembleDebug --offline || gradle assembleDebug || echo "Build fallback triggered"
+        ./gradlew assembleDebug || gradle assembleDebug
 
-    - name: Upload APK
+    - name: Find and Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: |
-          app/build/outputs/apk/debug/app-debug.apk
-          build/outputs/apk/debug/app-debug.apk
+          **/build/outputs/apk/debug/*.apk
           *.apk
-        if-no-files-found: ignore
