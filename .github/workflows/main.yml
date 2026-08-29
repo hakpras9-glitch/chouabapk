@@ -20,33 +20,27 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Find Gradle project
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10"
+
+      - name: Show project files
         run: |
-          echo "Searching for gradlew..."
-          GRADLEW=$(find . -type f -name "gradlew" | head -n 1)
-
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew was not found."
-            echo "Files in repository:"
-            find . -maxdepth 3 -type f | head -100
-            exit 1
-          fi
-
-          echo "Found: $GRADLEW"
-          echo "GRADLEW=$GRADLEW" >> $GITHUB_ENV
-
-      - name: Give permission
-        run: |
-          chmod +x "$GRADLEW"
+          echo "Project files:"
+          find . -maxdepth 3 -type f \
+            ! -path "./.git/*" | sort
 
       - name: Build APK
         run: |
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug --no-daemon
+          gradle assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: "**/build/outputs/apk/**/*.apk"
+          if-no-files-found: error
