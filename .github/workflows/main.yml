@@ -2,36 +2,36 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "**"
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-    - name: Build Force APK
-      run: |
-        export org.gradle.jvmargs="-Xmx2g"
-        if [ -f "gradlew" ]; then
+      - name: Grant execute permission
+        run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --continue || ./gradlew assemble --continue || true
-        else
-          gradle assembleDebug --continue || true
-        fi
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: |
-          **/build/outputs/apk/**/*.apk
-          *.apk
-        if-no-files-found: ignore
+      - name: Build APK
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g"
+        run: |
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: "**/build/outputs/apk/**/*.apk"
