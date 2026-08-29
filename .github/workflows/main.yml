@@ -20,14 +20,29 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Grant execute permission
+      - name: Find Gradle project
         run: |
-          chmod +x gradlew
+          echo "Searching for gradlew..."
+          GRADLEW=$(find . -type f -name "gradlew" | head -n 1)
+
+          if [ -z "$GRADLEW" ]; then
+            echo "ERROR: gradlew was not found."
+            echo "Files in repository:"
+            find . -maxdepth 3 -type f | head -100
+            exit 1
+          fi
+
+          echo "Found: $GRADLEW"
+          echo "GRADLEW=$GRADLEW" >> $GITHUB_ENV
+
+      - name: Give permission
+        run: |
+          chmod +x "$GRADLEW"
 
       - name: Build APK
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g"
         run: |
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          cd "$PROJECT_DIR"
           ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
